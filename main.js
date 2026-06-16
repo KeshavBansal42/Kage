@@ -26,7 +26,7 @@ function saveCurrentState() {
   fs.writeFileSync(saveFilePath, JSON.stringify(state));
 }
 function createWindow(type) {
-  const winWidth = type === 'ball' ? 46 : 108; 
+  const winWidth = type === 'ball' ? 46 : 108;
   const winHeight = type === 'ball' ? 46 : 108;
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.workAreaSize;
@@ -47,6 +47,7 @@ function createWindow(type) {
     hasShadow: false,
     alwaysOnTop: true,
     skipTaskbar: true,
+    type: 'toolbar',
     resizable: false,
     webPreferences: {
       contextIsolation: true,
@@ -56,7 +57,7 @@ function createWindow(type) {
   win.setAlwaysOnTop(true, 'screen-saver');
   win.loadFile('src/index.html', { query: { entity: type } });
   win.webContents.on('did-finish-load', () => {
-    win.blur(); 
+    win.blur();
     if (type === 'pet' && savedState.pet) {
       win.webContents.send('force-state', 'sleeping');
     }
@@ -71,7 +72,8 @@ function getMenuTemplate() {
     { label: 'Kage Desktop Pet', enabled: false },
     { type: 'separator' },
     { label: 'Wake Up Cat', click: () => { if (petWindow) petWindow.webContents.send('force-state', 'idle'); } },
-    { label: 'Reset Positions', click: () => {
+    {
+      label: 'Reset Positions', click: () => {
         const display = screen.getPrimaryDisplay();
         const bounds = display.workAreaSize;
         if (petWindow) {
@@ -82,13 +84,16 @@ function getMenuTemplate() {
           ballWindow.setPosition(Math.floor((bounds.width - 150) / 2) + 200, bounds.height - 150 - 50);
           ballWindow.webContents.send('reset-ground');
         }
-    }},
-    { label: 'Toggle Ball', click: () => {
+      }
+    },
+    {
+      label: 'Toggle Ball', click: () => {
         if (ballWindow) {
-           if (ballWindow.isVisible()) ballWindow.hide();
-           else ballWindow.show();
+          if (ballWindow.isVisible()) ballWindow.hide();
+          else ballWindow.show();
         }
-    }},
+      }
+    },
     { type: 'separator' },
     { label: 'Quit', click: () => { app.quit(); } }
   ];
