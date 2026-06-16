@@ -1,5 +1,4 @@
 const { contextBridge, ipcRenderer } = require('electron');
-
 contextBridge.exposeInMainWorld('kageAPI', {
   getScreenBounds: () => ipcRenderer.invoke('get-screen-bounds'),
   getAllDisplays: () => ipcRenderer.invoke('get-all-displays'),

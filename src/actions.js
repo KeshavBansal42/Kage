@@ -4,25 +4,19 @@ class ActionManager {
     this.bubble = bubbleElement;
     this.audio = audioManager;
     this.isActing = false;
-
     this.speechTexts = [
       "Hi!", "Don't poke me!", ":3", "Wheee~",
       "Zzz...", "*purrs*", "Play with me!", "( ╹▽╹ )"
     ];
-
     this.triggerJump = null;
   }
-
   setJumpCallback(cb) {
     this.triggerJump = cb;
   }
-
   triggerRandomAction() {
     if (this.isActing) return;
     this.isActing = true;
-
     this.audio.play('tap');
-
     const r = Math.random();
     if (r < 0.2) {
       this.playAnimation('wiggle', 600);
@@ -39,7 +33,6 @@ class ActionManager {
       this.showSpeechBubble();
     }
   }
-
   playAnimation(className, duration) {
     this.pet.classList.add(className);
     setTimeout(() => {
@@ -47,14 +40,11 @@ class ActionManager {
       this.isActing = false;
     }, duration);
   }
-
   showSpeechBubble(customText = null, duration = 2000) {
     this.bubble.textContent = customText || this.speechTexts[Math.floor(Math.random() * this.speechTexts.length)];
-
     this.bubble.style.left = '';
     this.bubble.style.top = '';
     this.bubble.classList.add('show');
-
     if (this.bubbleTimeout) clearTimeout(this.bubbleTimeout);
     this.bubbleTimeout = setTimeout(() => {
       this.bubble.classList.remove('show');
@@ -62,5 +52,4 @@ class ActionManager {
     }, duration);
   }
 }
-
 window.ActionManager = ActionManager;
