@@ -14,6 +14,7 @@ class DragManager {
     this.lastX = 0;
     this.lastDx = 0;
     this.shakeCount = 0;
+    this.mouseHistory = [];
 
     this.pet.addEventListener('mousedown', this.handleMouseDown.bind(this));
     document.addEventListener('mousemove', this.handleMouseMove.bind(this));
@@ -35,6 +36,7 @@ class DragManager {
     const winPos = await window.kageAPI.getWindowPos();
     this.grabOffsetX = e.screenX - winPos.x;
     this.grabOffsetY = e.screenY - winPos.y;
+    this.mouseHistory = [{ x: e.screenX, y: e.screenY, t: performance.now() }];
   }
 
   handleMouseMove(e) {
@@ -56,6 +58,9 @@ class DragManager {
       this.lastDx = dx;
       this.lastX = e.screenX;
     }
+    
+    this.mouseHistory.push({ x: e.screenX, y: e.screenY, t: performance.now() });
+    if (this.mouseHistory.length > 5) this.mouseHistory.shift();
   }
 
   async handleMouseUp(e) {
@@ -67,7 +72,21 @@ class DragManager {
     const wasClick = dist < 5;
 
     const winPos = await window.kageAPI.getWindowPos();
-    if (this.onDragEnd) this.onDragEnd(winPos, wasClick);
+    
+    let throwVx = 0;
+    let throwVy = 0;
+    const now = performance.now();
+    if (this.mouseHistory.length >= 2 && now - this.mouseHistory[this.mouseHistory.length - 1].t < 100) {
+       const oldest = this.mouseHistory[0];
+       const newest = this.mouseHistory[this.mouseHistory.length - 1];
+       const dt = (newest.t - oldest.t) / 1000;
+       if (dt > 0) {
+          throwVx = (newest.x - oldest.x) / dt;
+          throwVy = (newest.y - oldest.y) / dt;
+       }
+    }
+
+    if (this.onDragEnd) this.onDragEnd(winPos, wasClick, throwVx, throwVy);
   }
 }
 

@@ -2,15 +2,48 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pet = document.getElementById('pet');
   const bubble = document.getElementById('bubble');
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const entityType = urlParams.get('entity') || 'pet';
+
   const audioManager = window.audioManager;
   const physics = new PhysicsEngine();
   const actions = new ActionManager(pet, bubble, audioManager);
-  actions.setJumpCallback(() => physics.triggerJump());
+  if (entityType === 'pet') {
+    actions.setJumpCallback(() => physics.triggerJump());
+  }
 
-  const bounds = await window.kageAPI.getScreenBounds();
-  physics.updateScreenBounds(bounds);
+  if (entityType === 'ball') {
+    pet.classList.add('entity-ball');
+  } else {
+    pet.classList.add('entity-pet');
+  }
+
+  physics.entityType = entityType;
+  physics.petWidth = 100;
+  physics.petHeight = 100;
+
+  const displays = await window.kageAPI.getAllDisplays();
+  physics.updateDisplays(displays);
+
   let currentWinPos = await window.kageAPI.getWindowPos();
-  physics.setGroundY(currentWinPos.y);
+
+  window.kageAPI.onForceState((state) => {
+    physics.state = state;
+    if (state === 'sleeping') {
+      physics.idleTime = 0;
+      physics.stateTimer = 999999;
+    }
+  });
+
+  window.kageAPI.onBallPosition((pos) => {
+    physics.ballPos = pos;
+  });
+
+  if (entityType === 'ball') {
+    window.kageAPI.onApplyForce((force) => {
+      physics.resume(force.vx, force.vy);
+    });
+  }
 
   let dizzyCount = 0;
   let lastDizzyTime = 0;
@@ -31,10 +64,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const dragManager = new DragManager(pet, {
     onDragStart: () => physics.pause(),
-    onDragEnd: (newWinPos, wasClick) => {
+    onDragEnd: (newWinPos, wasClick, throwVx, throwVy) => {
       currentWinPos = newWinPos;
-      physics.setGroundY(newWinPos.y);
-      physics.resume();
+      
+      const throwSpeed = Math.hypot(throwVx || 0, throwVy || 0);
+      if (throwSpeed > 300) {
+        
+        physics.resume(throwVx, throwVy);
+      } else {
+        
+        physics.setGroundY(newWinPos.y);
+        physics.resume();
+      }
 
       if (wasClick) {
         const now = Date.now();
@@ -102,16 +143,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   window.kageAPI.onResetGround(async () => {
-    const screenBounds = await window.kageAPI.getScreenBounds();
-    physics.updateScreenBounds(screenBounds);
+    const newDisplays = await window.kageAPI.getAllDisplays();
+    physics.updateDisplays(newDisplays);
     const winPos = await window.kageAPI.getWindowPos();
     currentWinPos = winPos;
-    physics.setGroundY(winPos.y);
   });
 
   let lastTimestamp = performance.now();
   let subPixelX = 0;
   let subPixelY = 0;
+
+  
+  let previousState = '';
 
   function tick(timestamp) {
     const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.05);
@@ -135,8 +178,32 @@ document.addEventListener('DOMContentLoaded', async () => {
           currentWinPos.y += moveY;
         }
       }
+
+      
+      if (physics.state !== previousState) {
+        if (previousState) pet.classList.remove(`state-${previousState}`);
+        pet.classList.add(`state-${physics.state}`);
+        previousState = physics.state;
+      }
+      
+      
+      if (entityType === 'pet') {
+        if (physics.vx < 0 && !pet.classList.contains('facing-left')) {
+          pet.classList.add('facing-left');
+          pet.classList.remove('facing-right');
+        } else if (physics.vx > 0 && !pet.classList.contains('facing-right')) {
+          pet.classList.add('facing-right');
+          pet.classList.remove('facing-left');
+        }
+      }
     }
 
+      
+      if (entityType === 'ball') {
+         window.kageAPI.updateBallPosition(currentWinPos.x, currentWinPos.y);
+      }
+
+    
     pet.style.transform = `rotate(${physics.rotation}deg)`;
     requestAnimationFrame(tick);
   }
