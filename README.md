@@ -48,14 +48,21 @@ Make sure you have [Node.js](https://nodejs.org/) installed on your machine.
 - **Context Menu:** Right-click anywhere on the cat to open the tray menu, where you can toggle the ball, reset their positions, or quit the app.
 - **Play Catch:** Throw the ball near Kage when he is bored, and he will automatically track it, jump after it, and hit it back!
 
-## 📦 Building for Production
+## 📦 Distribution & Building for Production
 
-If you want to package Kage into a standalone executable (`.exe`, `.app`, or `.AppImage`), you can use the built-in electron-builder script:
+If you want to share Kage with other people so they can run it without needing Node.js or a terminal, you should build a standalone executable application (`.AppImage`, `.exe`, etc.).
 
-```bash
-npm run build
-```
-This will compile the app and place the distributable binaries in the `dist/` folder.
+1. **Build for Linux:**
+   ```bash
+   npm run build
+   ```
+   This generates a `.AppImage` inside the `dist/` folder. Linux users can simply download this file, make it executable, and double-click to run Kage natively without a terminal!
+
+2. **Build for Windows:**
+   ```bash
+   npm run build:win
+   ```
+   This generates a Windows installer (`.exe`) inside the `dist/` folder that you can share with Windows users.
 
 ---
 
