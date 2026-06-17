@@ -19,10 +19,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     physics.petWidth = 108;
     physics.petHeight = 108;
     const animations = {
-        idle: { file: 'cat_idle.png', frames: 4 },
-        run: { file: 'cat_run.png', frames: 6 },
-        jump: { file: 'cat_jump.png', frames: 5 },
-        sleep: { file: 'cat_sleep.png', frames: 3 }
+        idle: { file: 'Cat Sprite Sheet.png', frames: 4, row: 0, sheetCols: 8, sheetRows: 10 },
+        run: { file: 'Cat Sprite Sheet.png', frames: 8, row: 4, sheetCols: 8, sheetRows: 10 },
+        jump: { file: 'Cat Sprite Sheet.png', frames: 6, row: 7, sheetCols: 8, sheetRows: 10 },
+        sleep: { file: 'Cat Sprite Sheet.png', frames: 4, row: 6, sheetCols: 8, sheetRows: 10 }
     };
     spriteRenderer = new SpriteRenderer(pet, 108, animations);
   }
